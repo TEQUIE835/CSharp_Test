@@ -1,0 +1,226 @@
+@model IEnumerable<Patient>
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        function deleteConfirmation(id) {
+            Swal.fire({
+                title: '¿Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = '/Patient/Delete/' + id;
+                }
+            });
+        }
+
+    </script>
+    <script>
+        async function editPatient(id) {
+            try {
+                const response = await fetch(`/Patient/GetById/${id}`);
+                if (!response.ok) {
+                    Swal.fire('Error', 'No se pudo obtener el libro.', 'error');
+                    return;
+                }
+
+                const patient = await response.json();
+    Swal.fire({
+        title: 'Edit patient',
+        html: `
+            <div class="mt-3 d-flex flex-column">
+                <label for="">Name</label>
+                <input type="text" id="Name" class="form-control" placeholder="Name" value="${patient.name}">
+            </div>
+            <div class="mt-3 d-flex flex-column">
+                <label for="">Document</label>
+                <input type="text" id="Document" class="form-control" placeholder="Document" value="${patient.document}">
+            </div>
+            <div class="mt-3 d-flex flex-column">
+                <label for="">Email</label>
+                <input type="text" id="Email" class="form-control" placeholder="Email" value="${patient.email}">
+            </div>
+            <div class="mt-3 d-flex flex-column">
+                <label for="">Phone</label>
+                <input type="text" id="Phone" class="form-control" placeholder="Phone" value="${patient.phone}">
+            </div>
+            <div class="mt-3 d-flex flex-column">
+                <label for="">Birth date</label>
+                <input type="date" id="BirthDate" class="form-control" placeholder="Birth date" value="${patient.birthDate}">
+            </div>
+          
+        `,
+        showCancelButton: true,
+        confirmButtonText: 'Save',
+        cancelButtonText: 'Cancel',
+        focusConfirm: false,
+        preConfirm: () => {
+            const Name = document.getElementById('Name').value.trim();
+            const Document = document.getElementById('Document').value.trim();
+            const Email = document.getElementById('Email').value.trim();
+            const Phone = document.getElementById('Phone').value.trim();
+            const BirthDate = document.getElementById('BirthDate').value.trim();
+
+            
+            if (!Name || !Document || !Email || !Phone || !BirthDate) {
+                Swal.showValidationMessage('Por favor completa todos los campos');
+                return false;
+            }
+
+            return { Name, Document, Email, Phone, BirthDate };
+        }
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            const updatedPatient = {
+                Id : id,
+                Name: result.value.Name,
+                Document: result.value.Document,
+                Email: result.value.Email,
+                Phone: result.value.Phone,
+                BirthDate: result.value.BirthDate,
+            };
+            
+             
+                const res = await fetch(`/Patient/Edit`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(updatedPatient)
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    Swal.fire('Éxito', data.message, 'success').then(() => location.reload());
+                } else {
+                    Swal.fire('Error', data.message, 'error');
+                }
+            
+
+            
+        }
+        })}catch (error) {
+            console.error(error);
+            Swal.fire('Error', 'Ocurrió un error al editar el libro.', 'error');
+        }}
+        
+    
+</script>
+    <script>
+        @if (TempData["DeleteSuccess"] != null)
+        {
+            <text>
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Success!',
+                    text: '@TempData["DeleteSuccess"]'
+                });
+            </text>
+        } else if (TempData["DeleteError"] != null)
+        {
+            <text>
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: '@TempData["DeleteError"]'
+                });
+            </text>
+        } else if (TempData["CreateSuccess"] != null)
+        {
+            <text>
+                Swal.fire({
+                    icon : 'success',
+                    title : 'Success!',
+                    text : '@TempData["CreateSuccess"]'
+                })
+            </text>
+        }else if (TempData["CreateError"] != null)
+        {
+            <text>
+                Swal.fire({
+                    icon : 'error',
+                    title : 'Error',
+                    text : '@TempData["CreateError"]'
+                })
+            </text>
+        }
+    </script>
+}
+
+
+<h1>Patients list</h1>
+
+<div class="row">
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <form asp-action="AddPatient">
+                    <div class="mt-3 d-flex flex-column">
+                        <label for="">Name</label>
+                        <input type="text" class="form-control" name="Name" required>
+                    </div>
+                    <div class="mt-3 d-flex flex-column">
+                        <label for="">Document</label>
+                        <input type="text" class="form-control" name="Document" required>
+                    </div>
+                    <div class="mt-3 d-flex flex-column">
+                        <label for="">Email</label>
+                        <input type="text" class="form-control" name="Email" required>
+                    </div>
+                    <div class="mt-3 d-flex flex-column">
+                        <label for="">Phone</label>
+                        <input type="text" class="form-control" name="Phone" required>
+                    </div>
+                    <div class="mt-3 d-flex flex-column">
+                        <label for="">Birth date</label>
+                        <input type="date" class="form-control" name="BirthDate" required>
+                    </div>
+                    <hr>
+                    <button type="submit" class="btn btn-primary w-100">Save information</button>
+                </form>
+            </div>
+        </div>
+
+    </div>
+    <div class="col-md-9">
+        <table class="table">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Document</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Birth date</th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Id</td>
+                    <td>@item.Name</td>
+                    <td>@item.Document</td>
+                    <td>@item.Email</td>
+                    <td>@item.Phone</td>
+                    <td>@item.BirthDate</td>
+                    <td>
+                        <a class="btn btn-primary" onclick="editPatient(@item.Id)">Edit</a>
+                    </td>
+                    <td>
+                        <button class="btn btn-danger"  onclick="deleteConfirmation(@item.Id)">Delete</button>
+                    </td>
+                    <td>
+                        <a class="btn btn-warning"  asp-controller="Patient" asp-action="Details" asp-route-id="@item.Id">Details</a>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>

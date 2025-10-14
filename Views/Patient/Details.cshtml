@@ -1,0 +1,45 @@
+
+@model Patient
+
+<h1>Patient Information</h1>
+<h2>Patient name: @Model.Name</h2>
+<h2>Patient document: @Model.Document</h2>
+<h2>Patient birth: @Model.BirthDate</h2>
+<h2>Patient mail: @Model.Email</h2>
+<h2>Patient phone: @Model.Phone</h2>
+
+<div class="row">
+    <h2>Patient appointments</h2>
+    @if(@Model.Appointments.Count > 0){
+    <div class="col-md-9">
+        <table class="table">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Doctor</th>
+                <th>Date</th>
+                <th>Hour</th>
+                <th>Status</th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var item in Model.Appointments)
+            {
+                <tr>
+                    <td>@item.Id</td>
+                    <td>@item.Doctor.Name</td>
+                    <td>@item.Date</td>
+                    <td>@item.Hour</td>
+                    <td>@item.Status</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+    
+    }
+    else
+    {
+        <h3>The patient doesn't have appointments</h3>
+    }
+</div>
